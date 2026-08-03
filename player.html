@@ -6,6 +6,7 @@
 <title>EV SONYLIV - 4K UHD Live Player</title>
 
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
 
 <style>
 html,body{
@@ -95,6 +96,17 @@ html,body{
     opacity: 1;
 }
 
+/* Bottom fade for control readability */
+#bottom-gradient {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 160px;
+    background: linear-gradient(to top, rgba(0,0,0,0.65), rgba(0,0,0,0));
+    z-index: 9998;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
 /* Glassy Custom Controls */
 #controls-container {
     position: absolute;
@@ -108,14 +120,16 @@ html,body{
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 20px;
+    padding: 10px 22px;
 
-    background:rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    backdrop-filter:blur(16px);
-    -webkit-backdrop-filter:blur(16px);
-    border:1px solid rgba(255, 255, 255, 0.2);
-    box-shadow:0 4px 30px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
     
     transition: opacity 0.3s;
 }
@@ -130,43 +144,28 @@ html,body{
     background: transparent;
     border: none;
     color: white;
-    font-size: 18px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 5px;
-    transition: transform 0.1s;
+    transition: transform 0.12s, opacity 0.15s;
+    opacity: 0.9;
 }
 
 .control-btn:hover {
-    transform: scale(1.1);
+    transform: scale(1.12);
+    opacity: 1;
 }
 
-/* Live Indicator */
-#live-indicator {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: white;
-    font-weight: bold;
-    font-size: 14px;
-    letter-spacing: 1px;
-    margin-right: 15px;
+.control-btn .icon {
+    width: 22px;
+    height: 22px;
+    display: block;
 }
 
-.red-dot {
-    width: 10px;
-    height: 10px;
-    background-color: #ff3b30;
-    border-radius: 50%;
-    animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7); }
-    70% { box-shadow: 0 0 0 8px rgba(255, 59, 48, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); }
+#cast-btn.casting .icon-cast {
+    color: #f97316;
 }
 
 /* Volume Slider */
@@ -340,18 +339,29 @@ input[type=range]::-webkit-slider-thumb {
         <p class="footer">© 2026 SONY LIV • All Rights Reserved</p>
     </div>
 
+    <div id="bottom-gradient"></div>
+
     <div id="controls-container">
         <div class="left-controls">
-            <button id="play-pause" class="control-btn" title="Play/Pause">⏸</button>
-            <button id="mute-btn" class="control-btn" title="Mute/Unmute">🔇</button>
+            <button id="play-pause" class="control-btn" title="Play/Pause">
+                <svg class="icon icon-pause" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"></rect><rect x="14" y="4" width="4" height="16" rx="1"></rect></svg>
+                <svg class="icon icon-play" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M7 4.5v15l13-7.5-13-7.5z"></path></svg>
+            </button>
+            <button id="mute-btn" class="control-btn" title="Mute/Unmute">
+                <svg class="icon icon-vol-high" viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 5V4L8 9H4z"></path><path d="M16.5 12c0-1.77-.77-3.29-2-4.32v8.64c1.23-1.03 2-2.55 2-4.32z"></path><path d="M14.5 4.3v2.06c2.89 1 5 3.71 5 6.94s-2.11 5.94-5 6.94v2.06c4.01-1.03 7-4.62 7-9s-2.99-7.97-7-9z"></path></svg>
+                <svg class="icon icon-vol-muted" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M16.5 12A4.5 4.5 0 0 0 14 8v2.2l2.45 2.45c.03-.21.05-.43.05-.65z"></path><path d="M19 12c0 .94-.2 1.82-.54 2.63l1.51 1.51A8.93 8.93 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71z"></path><path d="M4.27 3 3 4.27 7.73 9H4v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.8L19.73 21 21 19.73l-9-9L4.27 3zM12 4l-2.17 2.17L12 8.34V4z"></path></svg>
+            </button>
             <input type="range" id="volume-bar" min="0" max="1" step="0.1" value="0">
         </div>
         
         <div class="right-controls">
-            <div id="live-indicator">
-                <span class="red-dot"></span> LIVE
-            </div>
-            <button id="fullscreen-btn" class="control-btn" title="Fullscreen">⛶</button>
+            <button id="cast-btn" class="control-btn" title="Cast" style="display:none">
+                <svg class="icon icon-cast" viewBox="0 0 24 24" fill="currentColor"><path d="M1 18v3h3c0-1.66-1.34-3-3-3z"></path><path d="M1 14v2c2.76 0 5 2.24 5 5h2c0-3.87-3.13-7-7-7z"></path><path d="M1 10v2c4.97 0 9 4.03 9 9h2c0-6.08-4.93-11-11-11z"></path><path d="M21 3H3c-1.1 0-2 .9-2 2v3h2V5h18v14h-7v2h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"></path></svg>
+            </button>
+            <button id="fullscreen-btn" class="control-btn" title="Fullscreen">
+                <svg class="icon icon-expand" viewBox="0 0 24 24" fill="currentColor"><path d="M4 9h2V5h4V3H4v6zm2 6H4v6h6v-2H6v-4zm12 4h-4v2h6v-6h-2v4zM14 3v2h4v4h2V3h-6z"></path></svg>
+                <svg class="icon icon-collapse" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"></path></svg>
+            </button>
         </div>
     </div>
 </div>
@@ -363,6 +373,7 @@ const streamUrl = params.get('url') || 'https://hugh.cdn.rumble.cloud/live/r8wvl
 const video = document.getElementById('video');
 const playerWrapper = document.getElementById('player-wrapper');
 const controlsContainer = document.getElementById('controls-container');
+const bottomGradient = document.getElementById('bottom-gradient');
 const branding = document.getElementById('branding');
 const loadingPopup = document.getElementById('loading-popup');
 const dmcaBtn = document.getElementById('dmca-btn');
@@ -373,6 +384,7 @@ const playPauseBtn = document.getElementById('play-pause');
 const muteBtn = document.getElementById('mute-btn');
 const volumeBar = document.getElementById('volume-bar');
 const fullscreenBtn = document.getElementById('fullscreen-btn');
+const castBtn = document.getElementById('cast-btn');
 
 // --- Show Loading Popup on Load ---
 window.addEventListener('DOMContentLoaded', () => {
@@ -388,6 +400,7 @@ let isModalOpen = false;
 
 function resetControlsTimeout() {
     controlsContainer.style.opacity = '1';
+    bottomGradient.style.opacity = '1';
     branding.style.opacity = '1';
     dmcaBtn.style.right = '0'; // Slide in
     
@@ -395,6 +408,7 @@ function resetControlsTimeout() {
     timeout = setTimeout(() => {
         if (!video.paused && !isModalOpen) {
             controlsContainer.style.opacity = '0';
+            bottomGradient.style.opacity = '0';
             branding.style.opacity = '0';
             dmcaBtn.style.right = '-34px'; // Slide out
         }
@@ -405,6 +419,7 @@ playerWrapper.addEventListener('mousemove', resetControlsTimeout);
 playerWrapper.addEventListener('mouseleave', () => {
     if (!video.paused && !isModalOpen) {
         controlsContainer.style.opacity = '0';
+        bottomGradient.style.opacity = '0';
         branding.style.opacity = '0';
         dmcaBtn.style.right = '-34px';
     }
@@ -424,30 +439,42 @@ closeDmcaBtn.addEventListener('click', () => {
     resetControlsTimeout(); // Restart idle timer
 });
 
-// Custom Controls Logic
+// Custom Controls Logic — icon toggling
+function showPauseIcon() {
+    playPauseBtn.querySelector('.icon-pause').style.display = 'block';
+    playPauseBtn.querySelector('.icon-play').style.display = 'none';
+}
+function showPlayIcon() {
+    playPauseBtn.querySelector('.icon-pause').style.display = 'none';
+    playPauseBtn.querySelector('.icon-play').style.display = 'block';
+}
+function updateVolumeIcon() {
+    const muted = video.muted || video.volume === 0;
+    muteBtn.querySelector('.icon-vol-high').style.display = muted ? 'none' : 'block';
+    muteBtn.querySelector('.icon-vol-muted').style.display = muted ? 'block' : 'none';
+}
+
 playPauseBtn.addEventListener('click', () => {
     if (video.paused) {
         video.play();
-        playPauseBtn.textContent = '⏸';
     } else {
         video.pause();
-        playPauseBtn.textContent = '▶';
     }
 });
 
-video.addEventListener('play', () => playPauseBtn.textContent = '⏸');
-video.addEventListener('pause', () => playPauseBtn.textContent = '▶');
+video.addEventListener('play', showPauseIcon);
+video.addEventListener('pause', showPlayIcon);
 
 muteBtn.addEventListener('click', () => {
     video.muted = !video.muted;
-    muteBtn.textContent = video.muted ? '🔇' : '🔊';
     volumeBar.value = video.muted ? 0 : video.volume;
+    updateVolumeIcon();
 });
 
 volumeBar.addEventListener('input', () => {
     video.volume = volumeBar.value;
     video.muted = volumeBar.value == 0;
-    muteBtn.textContent = video.muted ? '🔇' : '🔊';
+    updateVolumeIcon();
 });
 
 // Fullscreen & Orientation Lock Logic
@@ -464,6 +491,13 @@ fullscreenBtn.addEventListener('click', () => {
     } else {
         document.exitFullscreen();
     }
+});
+
+// Toggle fullscreen icon on state change
+document.addEventListener('fullscreenchange', () => {
+    const isFull = !!document.fullscreenElement;
+    fullscreenBtn.querySelector('.icon-expand').style.display = isFull ? 'none' : 'block';
+    fullscreenBtn.querySelector('.icon-collapse').style.display = isFull ? 'block' : 'none';
 });
 
 // Unlock orientation when exiting fullscreen by any means (e.g., Back button, Esc key)
@@ -533,6 +567,56 @@ if (Hls.isSupported()) {
         video.play().catch(()=>{});
     });
 }
+
+// --- Google Cast (Chromecast) ---
+let castContext = null;
+let castAvailable = false;
+
+window['__onGCastApiAvailable'] = function (isAvailable) {
+    if (!isAvailable || !window.cast || !window.chrome || !window.chrome.cast) return;
+
+    castContext = cast.framework.CastContext.getInstance();
+    castContext.setOptions({
+        receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+        autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+    });
+    castAvailable = true;
+    castBtn.style.display = 'flex';
+
+    castContext.addEventListener(
+        cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
+        (event) => {
+            const active = event.sessionState === cast.framework.SessionState.SESSION_STARTED
+                || event.sessionState === cast.framework.SessionState.SESSION_RESUMED;
+            castBtn.querySelector('.icon-cast').style.opacity = active ? '1' : '0.9';
+            castBtn.classList.toggle('casting', active);
+            if (active) video.pause(); // let the receiver handle playback
+        }
+    );
+};
+
+// Hide cast button until the SDK confirms availability (e.g. no Chromecast support in browser)
+castBtn.style.display = 'none';
+
+castBtn.addEventListener('click', async () => {
+    if (!castAvailable || !castContext) return;
+
+    try {
+        await castContext.requestSession();
+        const session = castContext.getCurrentSession();
+        if (!session) return;
+
+        const mediaInfo = new chrome.cast.media.MediaInfo(streamUrl, 'application/x-mpegurl');
+        mediaInfo.streamType = chrome.cast.media.StreamType.LIVE;
+        mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
+        mediaInfo.metadata.title = 'SONY LIV';
+
+        const request = new chrome.cast.media.LoadRequest(mediaInfo);
+        await session.loadMedia(request);
+    } catch (err) {
+        console.log('Cast failed or was cancelled:', err);
+    }
+});
 
 </script>
 
